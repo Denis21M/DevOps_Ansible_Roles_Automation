@@ -1,6 +1,5 @@
 param location string = resourceGroup().location
 
-@secure()
 param adminUsername string
 
 @secure()
@@ -72,4 +71,21 @@ resource vm 'Microsoft.Compute/virtualMachines@2021-07-01' = {
     }
     storageProfile: {
       imageReference: {
-        publisher: 'MicrosoftWindowsSe
+        publisher: 'MicrosoftWindowsServer'
+        offer: 'WindowsServer'
+        sku: '2022-Datacenter'
+        version: 'latest'
+      }
+      osDisk: {
+        createOption: 'FromImage'
+      }
+    }
+    networkProfile: {
+      networkInterfaces: [
+        {
+          id: nic.id
+        }
+      ]
+    }
+  }
+}

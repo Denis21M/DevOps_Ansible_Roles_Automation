@@ -1,6 +1,5 @@
 param location string = resourceGroup().location
 
-@secure()
 param adminUsername string
 
 @secure()
