@@ -3,6 +3,11 @@
     name: nginx
     state: present
 
+- name: Ensure nginx html directory exists
+  win_file:
+    path: C:\tools\nginx-1.24.0\html
+    state: directory
+
 - name: Copy index.html to NGINX web root
   win_copy:
     src: index.html
