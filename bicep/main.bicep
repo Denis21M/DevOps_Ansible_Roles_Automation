@@ -5,14 +5,6 @@ param adminUsername string
 @secure()
 param adminPassword string
 
-module keyvault 'keyvault.bicep' = {
-  name: 'keyVaultSetup'
-  params: {
-    location: location
-    adminPassword: adminPassword
-  }
-}
-
 module vm1 'windows-iis-vm.bicep' = {
   name: 'iisVmDeployment'
   params: {
