@@ -89,3 +89,13 @@ This project automates the provisioning and configuration of two Windows-based w
 
 # Step 7: Clean Up Resources (Optional for cost if not in use)
 - Delete the Azure resource group to remove all created resources.
+
+# Security Best Practices
+- All sensitive information like password and username are secured with GitHub secrets and Azure keyVault
+- use principle of least privilege, subscription-wide access not used
+- Set ansible_winrm_transport=basic only with HTTPS in production.
+- Use self-signed or trusted certificates for secure WinRM (if you can manage cert distribution).
+- Set ansible_winrm_server_cert_validation=validate (avoid ignore in real-world)
+- Allow HTTP (port 80) and RDP (port 3389) only from trusted IP ranges.
+- Port 5985 (HTTP) — used by default for WinRM unencrypted/basic communication
+- Port 5986 (HTTPS) — used for secure/encrypted WinRM with TLS
