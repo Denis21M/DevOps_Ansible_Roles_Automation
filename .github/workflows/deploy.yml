@@ -61,9 +61,13 @@ jobs:
       - name: Show generated inventory
         run: cat ./ansible/inventory.ini
 
-      - name: Run Ansible
-        uses: dawidd6/action-ansible-playbook@v2
-        with:
-          inventory: ./ansible/inventory.ini
-          playbook: ./ansible/site.yml
+      - name: Install Ansible (if needed)
+        run: |
+          python3 -m pip install --upgrade pip
+          pip install ansible
+
+      - name: Run Ansible playbook manually
+        run: |
+          ansible-playbook ./ansible/site.yml -i ./ansible/inventory.ini
+
 
