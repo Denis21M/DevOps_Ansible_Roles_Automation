@@ -32,19 +32,17 @@ jobs:
             --template-file ./bicep/main.bicep \
             --parameters adminUsername='${{ secrets.VM_ADMIN_USERNAME }}' adminPassword='${{ secrets.VM_ADMIN_PASSWORD }}'
 
-      - name: Fetch VM public IPs and create inventory.ini
+      - name: Fetch VM public IPs and credentials
         env:
           RG_NAME: ${{ secrets.AZURE_RG_NAME }}
           KV_NAME: ${{ secrets.AZURE_KV_NAME }}
         run: |
-          # Fetch IPs
-          IIS_VM_IP=$(az network public-ip show --resource-group $RG_NAME --name iis-vm-pip --query ipAddress -o tsv)
-          NGINX_VM_IP=$(az network public-ip show --resource-group $RG_NAME --name nginx-vm-pip --query ipAddress -o tsv)
+          echo "Fetching IPs and credentials..."
+          echo "IIS_VM_IP=$(az network public-ip show --resource-group $RG_NAME --name iis-vm-pip --query ipAddress -o tsv)" >> $GITHUB_ENV
+          echo "NGINX_VM_IP=$(az network public-ip show --resource-group $RG_NAME --name nginx-vm-pip --query ipAddress -o tsv)" >> $GITHUB_ENV
+          echo "ADMIN_USERNAME=$(az keyvault secret show --vault-name $KV_NAME --name vmAdminUsername --query value -o tsv)" >> $GITHUB_ENV
+          echo "ADMIN_PASSWORD=$(az keyvault secret show --vault-name $KV_NAME --name vmAdminPassword --query value -o tsv)" >> $GITHUB_ENV
 
-
-          # Fetch secrets from Key Vault
-          ADMIN_USERNAME=$(az keyvault secret show --vault-name $KV_NAME --name vmAdminUsername --query value -o tsv)
-          ADMIN_PASSWORD=$(az keyvault secret show --vault-name $KV_NAME --name vmAdminPassword --query value -o tsv)
       - name: Debug env vars
         run: |
           echo "IIS_VM_IP=$IIS_VM_IP"
@@ -52,12 +50,13 @@ jobs:
           echo "ADMIN_USERNAME=$ADMIN_USERNAME"
           echo "ADMIN_PASSWORD=$ADMIN_PASSWORD"
 
-          # Create Ansible inventory
+      - name: Create Ansible inventory
+        run: |
           echo "[iis]" > ./ansible/inventory.ini
           echo "$IIS_VM_IP ansible_user=$ADMIN_USERNAME ansible_password=$ADMIN_PASSWORD ansible_connection=winrm ansible_winrm_server_cert_validation=ignore" >> ./ansible/inventory.ini
           echo "" >> ./ansible/inventory.ini
           echo "[nginx]" >> ./ansible/inventory.ini
-          echo "$NGINX_VM_IP ansible_user=$ADMIN_USERNAME ansible_password=$ADMIN_PASSWORD ansible_connection=winrm ansible_winrm_server_cert_validation=ignore" >> ./ansible/inventory.ini 
+          echo "$NGINX_VM_IP ansible_user=$ADMIN_USERNAME ansible_password=$ADMIN_PASSWORD ansible_connection=winrm ansible_winrm_server_cert_validation=ignore" >> ./ansible/inventory.ini
 
       - name: Show generated inventory
         run: cat ./ansible/inventory.ini
