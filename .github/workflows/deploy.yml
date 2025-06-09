@@ -38,8 +38,9 @@ jobs:
           KV_NAME: ${{ secrets.AZURE_KV_NAME }}
         run: |
           # Fetch IPs
-          IIS_VM_IP=$(az network public-ip show --resource-group $RG_NAME --name iis-vm-ip --query ipAddress -o tsv)
-          NGINX_VM_IP=$(az network public-ip show --resource-group $RG_NAME --name nginx-vm-ip --query ipAddress -o tsv)
+          IIS_VM_IP=$(az network public-ip show --resource-group $RG_NAME --name iis-vm-pip --query ipAddress -o tsv)
+          NGINX_VM_IP=$(az network public-ip show --resource-group $RG_NAME --name nginx-vm-pip --query ipAddress -o tsv)
+
 
           # Fetch secrets from Key Vault
           ADMIN_USERNAME=$(az keyvault secret show --vault-name $KV_NAME --name vmAdminUsername --query value -o tsv)
