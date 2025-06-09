@@ -45,6 +45,12 @@ jobs:
           # Fetch secrets from Key Vault
           ADMIN_USERNAME=$(az keyvault secret show --vault-name $KV_NAME --name vmAdminUsername --query value -o tsv)
           ADMIN_PASSWORD=$(az keyvault secret show --vault-name $KV_NAME --name vmAdminPassword --query value -o tsv)
+      - name: Debug env vars
+        run: |
+          echo "IIS_VM_IP=$IIS_VM_IP"
+          echo "NGINX_VM_IP=$NGINX_VM_IP"
+          echo "ADMIN_USERNAME=$ADMIN_USERNAME"
+          echo "ADMIN_PASSWORD=$ADMIN_PASSWORD"
 
           # Create Ansible inventory
           echo "[iis]" > ./ansible/inventory.ini
@@ -52,6 +58,9 @@ jobs:
           echo "" >> ./ansible/inventory.ini
           echo "[nginx]" >> ./ansible/inventory.ini
           echo "$NGINX_VM_IP ansible_user=$ADMIN_USERNAME ansible_password=$ADMIN_PASSWORD ansible_connection=winrm ansible_winrm_server_cert_validation=ignore" >> ./ansible/inventory.ini 
+
+      - name: Show generated inventory
+        run: cat ./ansible/inventory.ini
 
       - name: Run Ansible
         uses: dawidd6/action-ansible-playbook@v2
