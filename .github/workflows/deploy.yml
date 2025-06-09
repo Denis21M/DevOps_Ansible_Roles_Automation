@@ -61,10 +61,10 @@ jobs:
       - name: Show generated inventory
         run: cat ./ansible/inventory.ini
 
-      - name: Install Ansible (if needed)
+      - name: Install Ansible and pywinrm
         run: |
           python3 -m pip install --upgrade pip
-          pip install ansible
+          pip install ansible pywinrm
 
       - name: Run Ansible playbook manually
         run: |
