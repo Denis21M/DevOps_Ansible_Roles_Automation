@@ -33,11 +33,10 @@ jobs:
             --parameters adminUsername='${{ secrets.VM_ADMIN_USERNAME }}' adminPassword='${{ secrets.VM_ADMIN_PASSWORD }}'
 
       - name: Fetch VM public IPs and create inventory.ini
+        env:
+          RG_NAME: ${{ secrets.AZURE_RG_NAME }}
+          KV_NAME: ${{ secrets.AZURE_KV_NAME }}
         run: |
-          env:
-            RG_NAME: ${{ secrets.AZURE_RG_NAME }}
-            KV_NAME: ${{ secrets.AZURE_KV_NAME }}
-
           # Fetch IPs
           IIS_VM_IP=$(az network public-ip show --resource-group $RG_NAME --name iis-vm-ip --query ipAddress -o tsv)
           NGINX_VM_IP=$(az network public-ip show --resource-group $RG_NAME --name nginx-vm-ip --query ipAddress -o tsv)
