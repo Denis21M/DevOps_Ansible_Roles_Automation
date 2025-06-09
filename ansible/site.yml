@@ -1,0 +1,7 @@
+- hosts: iis
+  roles:
+    - iis
+
+- hosts: nginx
+  roles:
+    - nginx

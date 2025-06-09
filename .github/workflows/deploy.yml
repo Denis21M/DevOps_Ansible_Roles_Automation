@@ -1,0 +1,61 @@
+name: Deploy to Azure
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Set admin credentials from GitHub Secrets
+        env:
+          ADMIN_USERNAME: ${{ secrets.VM_ADMIN_USERNAME }}
+          ADMIN_PASSWORD: ${{ secrets.VM_ADMIN_PASSWORD }}
+        run: |
+          echo "ADMIN_USERNAME=$ADMIN_USERNAME" >> $GITHUB_ENV
+          echo "ADMIN_PASSWORD=$ADMIN_PASSWORD" >> $GITHUB_ENV
+
+      - name: Deploy Infrastructure (Bicep)
+        run: |
+          az deployment group create \
+            --resource-group windows_vm_rg \
+            --template-file ./bicep/main.bicep \
+            --parameters adminUsername='${{ secrets.VM_ADMIN_USERNAME }}' adminPassword='${{ secrets.VM_ADMIN_PASSWORD }}'
+
+      - name: Fetch VM public IPs and create inventory.ini
+        run: |
+          env:
+            RG_NAME: ${{ secrets.AZURE_RG_NAME }}
+            KV_NAME: ${{ secrets.AZURE_KV_NAME }}
+
+          # Fetch IPs
+          IIS_VM_IP=$(az network public-ip show --resource-group $RG_NAME --name iis-vm-ip --query ipAddress -o tsv)
+          NGINX_VM_IP=$(az network public-ip show --resource-group $RG_NAME --name nginx-vm-ip --query ipAddress -o tsv)
+
+          # Fetch secrets from Key Vault
+          ADMIN_USERNAME=$(az keyvault secret show --vault-name $KV_NAME --name vmAdminUsername --query value -o tsv)
+          ADMIN_PASSWORD=$(az keyvault secret show --vault-name $KV_NAME --name vmAdminPassword --query value -o tsv)
+
+          # Create Ansible inventory
+          echo "[iis]" > ./ansible/inventory.ini
+          echo "$IIS_VM_IP ansible_user=$ADMIN_USERNAME ansible_password=$ADMIN_PASSWORD ansible_connection=winrm ansible_winrm_server_cert_validation=ignore" >> ./ansible/inventory.ini
+          echo "" >> ./ansible/inventory.ini
+          echo "[nginx]" >> ./ansible/inventory.ini
+          echo "$NGINX_VM_IP ansible_user=$ADMIN_USERNAME ansible_password=$ADMIN_PASSWORD ansible_connection=winrm ansible_winrm_server_cert_validation=ignore" >> ./ansible/inventory.ini 
+
+      - name: Run Ansible
+        uses: dawidd6/action-ansible-playbook@v2
+        with:
+          playbook: ./ansible/site.yml
+          inventory: ./ansible/inventory.ini
+

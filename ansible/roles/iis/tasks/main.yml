@@ -1,0 +1,9 @@
+- name: Install IIS
+  win_feature:
+    name: Web-Server
+    state: present
+
+- name: Deploy HTML page
+  win_copy:
+    src: index.html
+    dest: C:\inetpub\wwwroot\index.html

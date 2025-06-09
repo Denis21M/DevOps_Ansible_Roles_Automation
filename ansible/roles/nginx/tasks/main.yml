@@ -1,0 +1,9 @@
+- name: Install Chocolatey
+  win_chocolatey:
+    name: nginx
+    state: present
+
+- name: Copy index.html to NGINX web root
+  win_copy:
+    src: index.html
+    dest: C:\tools\nginx-1.24.0\html\index.html
