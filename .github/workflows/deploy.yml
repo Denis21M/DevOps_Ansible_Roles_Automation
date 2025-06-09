@@ -53,10 +53,15 @@ jobs:
       - name: Create Ansible inventory
         run: |
           echo "[iis]" > ./ansible/inventory.ini
-          echo "$IIS_VM_IP ansible_user=$ADMIN_USERNAME ansible_password=$ADMIN_PASSWORD ansible_connection=winrm ansible_winrm_server_cert_validation=ignore" >> ./ansible/inventory.ini
+          echo "$IIS_VM_IP ansible_user=$ADMIN_USERNAME ansible_password=$ADMIN_PASSWORD ansible_connection=winrm ansible_winrm_transport=basic ansible_winrm_server_cert_validation=ignore" >> ./ansible/inventory.ini
           echo "" >> ./ansible/inventory.ini
           echo "[nginx]" >> ./ansible/inventory.ini
-          echo "$NGINX_VM_IP ansible_user=$ADMIN_USERNAME ansible_password=$ADMIN_PASSWORD ansible_connection=winrm ansible_winrm_server_cert_validation=ignore" >> ./ansible/inventory.ini
+          echo "$NGINX_VM_IP ansible_user=$ADMIN_USERNAME ansible_password=$ADMIN_PASSWORD ansible_connection=winrm ansible_winrm_transport=basic ansible_winrm_server_cert_validation=ignore" >> ./ansible/inventory.ini
+        env:
+          IIS_VM_IP: ${{ env.IIS_VM_IP }}
+          NGINX_VM_IP: ${{ env.NGINX_VM_IP }}
+          ADMIN_USERNAME: ${{ env.ADMIN_USERNAME }}
+          ADMIN_PASSWORD: ${{ env.ADMIN_PASSWORD }}
 
       - name: Show generated inventory
         run: cat ./ansible/inventory.ini
