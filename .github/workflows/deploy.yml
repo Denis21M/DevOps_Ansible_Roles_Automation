@@ -66,5 +66,4 @@ jobs:
         uses: dawidd6/action-ansible-playbook@v2
         with:
           playbook: ./ansible/site.yml
-          inventory: ./ansible/inventory.ini
 
